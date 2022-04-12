@@ -10,20 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7356cde520f1a5847ac715c851907bac, type: 3}
-  m_Name: Tackle
+  m_Name: Supersonic
   m_EditorClassIdentifier: 
-  moveName: Tackle
+  moveName: Supersonic
   description: 
   type: 0
-  power: 40
+  power: 0
   accuracy: 100
-  pp: 1
-  priority: 0
-  category: 0
+  pp: 20
+  category: 2
   effects:
     boosts: []
     status: 0
-    volatileStatus: 0
+    volatileStatus: 6
   target: 0
   alwaysHits: 0
-  secondaries: []

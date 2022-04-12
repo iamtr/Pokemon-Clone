@@ -70,7 +70,11 @@ public enum Stat
     Defense,
     SpAttack, 
     SpDefense,
-    Speed
+    Speed,
+
+    //These are not actual stats, they're used to boost the move
+    Accuracy, 
+    Evasion
 }
 
 [System.Serializable]

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -11,13 +12,18 @@ public class Pokemon
     public PokemonBase Base => _base;
     public int Level => level;
     public int HP { get; set; }
+    public int StatusTime { get; set; }
+    public int VolatileStatusTime { get; set; }
     public List<Move> Moves { get; set; }
+    public Move CurrentMove { get; set; }
     public Dictionary<Stat, int> Stats { get; private set; }
     public Dictionary<Stat, int> StatBoosts { get; private set; }
     ///<summary> Allows messages to be shown onto dialog box, eg poison. <br></br> <br></br> 
     ///Text displayed via BattleSystem.ShowStatusChanges() </summary>
     public Queue<string> StatusChanges { get; private set; } = new Queue<string>();
     public Condition Status { get; private set; }
+    public Condition VolatileStatus { get; private set; }
+    public event System.Action OnStatusChanged;
     public int Attack
     {
         get { return GetStat(Stat.Attack); }
@@ -57,8 +63,12 @@ public class Pokemon
         CalculateStats();
         HP = MaxHp;
         ResetStatBoost();
+
+        Status = null;
+        VolatileStatus = null;
     }
-    private void CalculateStats()
+
+	private void CalculateStats()
 	{
         Stats = new Dictionary<Stat, int>();
         Stats.Add(Stat.Attack, Mathf.FloorToInt((Base.Attack * Level) / 100) + 5);
@@ -67,7 +77,7 @@ public class Pokemon
         Stats.Add(Stat.SpDefense, Mathf.FloorToInt((Base.SpDefense * Level) / 100) + 5);
         Stats.Add(Stat.Speed, Mathf.FloorToInt((Base.Speed * Level) / 100) + 5);
 
-        MaxHp = Mathf.FloorToInt((Base.MaxHp * Level) / 100) + 50;
+        MaxHp = Mathf.FloorToInt((Base.MaxHp * Level) / 100) + 50 + Level;
     }
     private void ResetStatBoost()
     {
@@ -77,7 +87,10 @@ public class Pokemon
             {Stat.Defense, 0},
             {Stat.SpAttack, 0},
             {Stat.SpDefense, 0 },
-            {Stat.Speed, 0}
+            {Stat.Speed, 0},
+
+            {Stat.Accuracy, 0},
+            {Stat.Evasion, 0}   
         };
     }
         
@@ -118,12 +131,33 @@ public class Pokemon
 		}
 	}
 
-    public void SetStatus(ConditionID conditionID)
+    public void SetVolatileStatus(ConditionID conditionID)
 	{
-        Status = ConditionsDB.Conditions[conditionID];
-        StatusChanges.Enqueue($"{Base.Name} {Status.StartMessage}");
+        if (VolatileStatus != null) return;
+        VolatileStatus = ConditionsDB.Conditions[conditionID];
+        VolatileStatus?.OnStart?.Invoke(this);
+        StatusChanges.Enqueue($"{Base.Name} {VolatileStatus.StartMessage}");
 	}
 
+    public void SetStatus(ConditionID conditionID)
+    {
+        if (Status != null) return;
+        Status = ConditionsDB.Conditions[conditionID];
+        Status?.OnStart?.Invoke(this);
+        StatusChanges.Enqueue($"{Base.Name} {Status.StartMessage}");
+        OnStatusChanged?.Invoke();
+        
+    }
+    public void CureStatus()
+    {
+        Status = null;
+        OnStatusChanged?.Invoke();
+    }
+    public void CureVolatileStatus()
+    {
+        VolatileStatus = null;
+       
+    }
     public DamageDetails TakeDamage(Move move, Pokemon Attacker)
     {
         float critical = 1f;
@@ -155,12 +189,15 @@ public class Pokemon
 
     public Move GetRandomMove()
 	{
-        int r = Random.Range(0, Moves.Count);
-        return Moves[r];
+        var movesWithPP = Moves.Where(x => x.PP > 0).ToList();
+
+        int r = Random.Range(0, movesWithPP.Count);
+        return movesWithPP[r];
 	}
 
     public void OnBattleOver()
 	{
+        VolatileStatus = null;
         ResetStatBoost();
 	}
 
@@ -170,11 +207,35 @@ public class Pokemon
         HP = Mathf.Clamp(HP - damage, 0, MaxHp);
 	}
 
+
+    public bool OnBeforeMove()
+	{
+        bool canPerformMove = true;
+
+        if (Status?.OnBeforeMove != null)
+		{
+            if (!Status.OnBeforeMove(this))
+                canPerformMove = false; 
+		}
+
+        if (VolatileStatus?.OnBeforeMove != null)
+        {
+            if (!VolatileStatus.OnBeforeMove(this))
+                canPerformMove = false;
+        }
+
+        return canPerformMove;
+	}
     ///<summary> Pokemon.OnAfterTurn calls OnAfterTurn from Conditions class.Takes no parameters <br></br> <br></br> 
     ///Do not confuse with Condition.OnAfterTurn()! </summary>
     public void OnAfterTurn()
 	{
+        // delegate() and delegate.Invoke() does the same thing.
+        // We wanted to check if OnAfterTurn is null, therefore Invoke() has to be used
+        // Or else there will be errors
+
         Status?.OnAfterTurn?.Invoke(this);
+        VolatileStatus?.OnAfterTurn?.Invoke(this);
 	}
 }
 public class DamageDetails

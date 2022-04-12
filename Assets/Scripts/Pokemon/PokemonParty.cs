@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using System;
 public class PokemonParty : MonoBehaviour
 {
 	[SerializeField] private List<Pokemon> pokemons;
@@ -21,3 +21,4 @@ public class PokemonParty : MonoBehaviour
 		return pokemons.Where(x => x.HP > 0).FirstOrDefault();
 	}
 }
+

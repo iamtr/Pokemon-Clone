@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 
 
-public enum GameState { FreeRoam, Battle}
+public enum GameState { FreeRoam, Battle, Dialog }
 public class GameController : MonoBehaviour
 {
     [SerializeField] private GameState state;
@@ -12,10 +12,24 @@ public class GameController : MonoBehaviour
 	[SerializeField] private PlayerController playerController;
 	[SerializeField] private BattleSystem battleSystem;
 	[SerializeField] private Camera worldCamera;
+
+	private void Awake()
+	{
+		ConditionsDB.Init();
+	}
 	private void Start()
 	{
 		playerController.OnEncountered += StartBattle;
 		battleSystem.OnBattleOver += EndBattle;
+
+		DialogManager.Instance.OnShowDialog += () => state = GameState.Dialog;
+		DialogManager.Instance.OnCloseDialog += () =>
+		{
+			if (state == GameState.Dialog)
+				state = GameState.FreeRoam;
+		};
+
+
 	}
 	private void Update()
 	{
@@ -23,9 +37,13 @@ public class GameController : MonoBehaviour
 		{ 
 			playerController.HandleUpdate();
 		}
-		if (state == GameState.Battle)
+		else if (state == GameState.Battle)
 		{
 			battleSystem.HandleUpdate();
+		}
+		else if (state == GameState.Dialog)
+		{
+			DialogManager.Instance.HandleUpdate();
 		}
 	}
 

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4248a7c130232349bdac5956c3e40f2, type: 3}
-  m_Name: Bulbasaur
+  m_Name: Pidgey
   m_EditorClassIdentifier: 
-  pokemonName: Bulbasaur
+  pokemonName: Pidgey
   description: 
-  frontSprite: {fileID: 21300000, guid: 0f37bf3cf5680a64d863b5f155b2a597, type: 3}
-  backSprite: {fileID: 21300000, guid: aacaae602a38f884ab9e02e43de3736d, type: 3}
-  type1: 4
-  type2: 7
+  frontSprite: {fileID: 8649031496905042397, guid: 4060aaa720160b746a231fdbfe07c346, type: 3}
+  backSprite: {fileID: 4806786054252530416, guid: b5d3a977e01c0db4484bbd10d650be04, type: 3}
+  type1: 9
+  type2: 0
   maxHp: 40
   attack: 45
   defense: 40
@@ -29,7 +29,7 @@ MonoBehaviour:
     level: 1
   - moveBase: {fileID: 11400000, guid: 2f2afebf4b67713428188bda3ede016d, type: 2}
     level: 4
-  - moveBase: {fileID: 11400000, guid: cefff5bdc8c21904bb90fef20e81f367, type: 2}
+  - moveBase: {fileID: 11400000, guid: c7c11fa80c9132049b3050ac93c28711, type: 2}
     level: 4
   - moveBase: {fileID: 11400000, guid: 36d088fb8f660eb45adda6c4e6ec5754, type: 2}
     level: 6
